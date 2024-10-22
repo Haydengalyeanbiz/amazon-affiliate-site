@@ -26,8 +26,8 @@ const store = createStore({
 		// ! GET ALL POSTS
 		async fetchPosts({ commit }) {
 			try {
-				const response = await axios.get('/posts'); // Flask API to get posts
-				commit('setPosts', response.data); // Commit posts to the state
+				const response = await axios.get('/posts');
+				commit('setPosts', response.data);
 			} catch (error) {
 				console.error('Failed to fetch posts:', error);
 			}
@@ -40,8 +40,8 @@ const store = createStore({
 			}
 
 			try {
-				const response = await axios.post('/submit-post', postData); // Flask API to submit post
-				return response.data; // Return success message
+				const response = await axios.post('/submit-post', postData);
+				return response.data;
 			} catch (error) {
 				console.error('Failed to submit post:', error);
 				throw error;
@@ -51,12 +51,12 @@ const store = createStore({
 		// ! USER LOGIN
 		async login({ commit }, credentials) {
 			try {
-				const response = await axios.post('/login', credentials); // Flask API to login
-				commit('setUser', response.data); // Store user data in state
-				return response.data; // Login successful
+				const response = await axios.post('/login-for-tara', credentials);
+				commit('setUser', response.data);
+				return response.data;
 			} catch (error) {
 				console.error('Failed to log in:', error);
-				throw error; // Re-throw error so the component can handle it
+				throw error;
 			}
 		},
 

@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, session
 from flask_wtf import FlaskForm
 from wtforms import StringField, DecimalField, SubmitField
 from wtforms.validators import DataRequired
@@ -8,7 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import requests
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key'
+app.config['SECRET_KEY'] = 'tonto_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///affiliate_website.db'  # SQLite for local development
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -68,15 +68,10 @@ def login():
     email = data.get('email')
     password = data.get('password')
 
-    # Find the user
     user = User.query.filter_by(email=email).first()
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({'error': 'Invalid email or password'}), 401
-
-    # Store the user in the session (or use a token-based system)
-    # Example using Flask sessions:
     session['user_id'] = user.id
-
     return jsonify({'message': 'Login successful'}), 200
 
 # ?-------------------------------AMAZON FETCH ROUTE---------------------------------
