@@ -1,7 +1,9 @@
 <template>
 	<div>
 		<h1>Login</h1>
-		<form @submit.prevent="login">
+		<form @submit.prevent="handleLogin">
+			<!-- Changed method name to handleLogin -->
+			<!-- Prevent default form submission -->
 			<div>
 				<label for="email">Email:</label>
 				<input
@@ -9,6 +11,7 @@
 					v-model="email"
 					id="email"
 					required
+					autocomplete="email"
 				/>
 			</div>
 			<div>
@@ -18,9 +21,16 @@
 					v-model="password"
 					id="password"
 					required
+					autocomplete="current-password"
 				/>
 			</div>
-			<button type="submit">Login</button>
+			<!-- Disable the button when loading is true -->
+			<button
+				type="submit"
+				:disabled="loading"
+			>
+				Login
+			</button>
 		</form>
 
 		<p v-if="error">{{ error }}</p>
@@ -31,24 +41,38 @@
 import { mapActions } from 'vuex';
 
 export default {
-	name: 'LoginForm',
 	data() {
 		return {
 			email: '',
 			password: '',
 			error: null,
+			loading: false, // Ensure loading is defined
 		};
 	},
 	methods: {
-		...mapActions(['login']), // Map Vuex login action to this component
-		async login() {
+		...mapActions(['login']), // Keep Vuex action as login
+		async handleLogin() {
+			// Renamed the method to handleLogin
+			console.log('Login button clicked');
+			this.loading = true;
+
 			try {
 				this.error = null;
+
 				const credentials = { email: this.email, password: this.password };
-				await this.login(credentials); // Call Vuex login action
-				this.$router.push('/'); // Redirect to home page on successful login
+				console.log('Credentials:', credentials); // Log credentials
+
+				// Call the Vuex login action
+				await this.login(credentials); // Calls the Vuex action, not this method recursively
+				console.log('Login successful');
+
+				// Redirect to home page after successful login
+				this.$router.push('/');
 			} catch (error) {
-				this.error = 'Invalid email or password'; // Handle login error
+				console.error('Login failed:', error);
+				this.error = error.message;
+			} finally {
+				this.loading = false;
 			}
 		},
 	},

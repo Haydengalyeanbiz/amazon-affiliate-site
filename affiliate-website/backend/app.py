@@ -5,9 +5,11 @@ from wtforms.validators import DataRequired
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_cors import CORS
 import requests
 
 app = Flask(__name__)
+CORS(app)
 app.config['SECRET_KEY'] = 'tonto_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///affiliate_website.db'  # SQLite for local development
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -71,8 +73,9 @@ def login():
     user = User.query.filter_by(email=email).first()
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({'error': 'Invalid email or password'}), 401
+
     session['user_id'] = user.id
-    return jsonify({'message': 'Login successful'}), 200
+    return jsonify({'email': user.email, 'username': user.username}), 200
 
 # ?-------------------------------AMAZON FETCH ROUTE---------------------------------
 # *------------------------Fetch Product Details-------------------------------

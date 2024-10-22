@@ -9,6 +9,7 @@ flask-wtf = "*"
 requests = "*"
 flask-sqlalchemy = "*"
 flask-migrate = "*"
+flask-cors = "*"
 
 [dev-packages]
 

@@ -1,6 +1,8 @@
 import { createStore } from 'vuex';
 import axios from 'axios';
 
+axios.defaults.baseURL = 'http://127.0.0.1:5000';
+
 const store = createStore({
 	state() {
 		return {
@@ -55,6 +57,9 @@ const store = createStore({
 				commit('setUser', response.data);
 				return response.data;
 			} catch (error) {
+				if (error.response && error.response.status === 401) {
+					throw new Error('Invalid email or password');
+				}
 				console.error('Failed to log in:', error);
 				throw error;
 			}
