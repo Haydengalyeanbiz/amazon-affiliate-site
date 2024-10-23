@@ -1,59 +1,72 @@
 <template>
 	<div>
-		<h1>Find a Product</h1>
+		<h1>Find Amazon Product</h1>
 		<form @submit.prevent="fetchProductDetails">
-			<input
-				type="text"
-				v-model="affiliateLink"
-				placeholder="Enter Amazon Affiliate Link"
-			/>
-			<button type="submit">Fetch Product</button>
+			<div>
+				<label for="affiliate-link">Affiliate Link:</label>
+				<input
+					type="text"
+					v-model="affiliateLink"
+					id="affiliate-link"
+					placeholder="Paste your Amazon affiliate link here"
+					required
+				/>
+			</div>
+			<button type="submit">Fetch Product Details</button>
 		</form>
 
 		<div v-if="product">
-			<h2>{{ product.title }}</h2>
+			<h2>Product Details</h2>
+			<p><strong>Title:</strong> {{ product.title }}</p>
+			<p><strong>Price:</strong> {{ product.price }}</p>
 			<img
-				:src="product.image"
+				:src="product.imageUrl"
 				alt="Product Image"
 			/>
-			<p>{{ product.description }}</p>
-			<p>Price: {{ product.price }}</p>
-			<p>Rating: {{ product.rating }}</p>
 		</div>
+
+		<p v-if="error">{{ error }}</p>
 	</div>
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
-	name: 'FindProductForm',
 	data() {
 		return {
 			affiliateLink: '',
 			product: null,
+			error: null,
 		};
 	},
 	methods: {
-		fetchProductDetails() {
-			// Mocking product data fetch
-			// You will replace this with the actual API call logic
-			this.product = {
-				title: 'Sample Product',
-				image: 'https://via.placeholder.com/150',
-				description: 'This is a sample product fetched from the API.',
-				price: '$29.99',
-				rating: '4.5',
-			};
-			console.log('Affiliate Link:', this.affiliateLink);
+		extractASIN(affiliateLink) {
+			const regex = /([A-Z0-9]{10})(?:[/?]|$)/; // Remove the backslash escape before '/'
+			const match = affiliateLink.match(regex);
+			return match ? match[1] : null;
+		},
+		async fetchProductDetails() {
+			this.error = null;
+			this.product = null;
+
+			const asin = this.extractASIN(this.affiliateLink);
+			if (!asin) {
+				this.error = 'Invalid Amazon link. Could not extract ASIN.';
+				return;
+			}
+
+			try {
+				const response = await axios.post(
+					'http://127.0.0.1:5000/fetch-product-details',
+					{ asin }
+				);
+				this.product = response.data;
+			} catch (error) {
+				console.error('Failed to fetch product details:', error);
+				this.error = 'Failed to fetch product details. Please try again.';
+			}
 		},
 	},
 };
 </script>
-
-<style scoped>
-h1 {
-	color: #2c3e50;
-}
-form {
-	margin-bottom: 20px;
-}
-</style>
