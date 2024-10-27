@@ -1,10 +1,6 @@
 <template>
-	<div>
-		<h1>IndyCouponMama.com</h1>
-		<p>
-			This is the homepage. You can navigate to the Find Product page to search
-			for products.
-		</p>
+	<div class="homepage-container">
+		<h1 class="homepage-h1">IndyCouponMama</h1>
 	</div>
 </template>
 
@@ -15,7 +11,14 @@ export default {
 </script>
 
 <style scoped>
-h1 {
-	color: #2c3e50;
+.homepage-h1 {
+	color: var(--primary-dark);
+}
+
+.homepage-container {
+	display: flex;
+	justify-content: center;
+	background-color: var(--primary-light);
+	height: 92dvh;
 }
 </style>

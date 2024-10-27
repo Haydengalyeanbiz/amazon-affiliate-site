@@ -1,11 +1,14 @@
 <template>
-	<div>
+	<div class="login-form-container">
 		<h1>Login</h1>
-		<form @submit.prevent="handleLogin">
+		<form
+			@submit.prevent="handleLogin"
+			class="login-form"
+		>
 			<!-- Changed method name to handleLogin -->
 			<!-- Prevent default form submission -->
-			<div>
-				<label for="email">Email:</label>
+			<div class="label-input">
+				<label for="email">Email</label>
 				<input
 					type="email"
 					v-model="email"
@@ -14,8 +17,8 @@
 					autocomplete="email"
 				/>
 			</div>
-			<div>
-				<label for="password">Password:</label>
+			<div class="label-input">
+				<label for="password">Password</label>
 				<input
 					type="password"
 					v-model="password"
@@ -28,6 +31,7 @@
 			<button
 				type="submit"
 				:disabled="loading"
+				class="log-in-btn"
 			>
 				Login
 			</button>
@@ -78,3 +82,33 @@ export default {
 	},
 };
 </script>
+
+<style>
+.login-form-container {
+	height: 88dvh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	background-color: var(--primary-light);
+}
+
+.login-form {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+	width: 300px;
+}
+.label-input {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 300px;
+}
+
+.label-input input {
+	height: 30px;
+	width: 300px;
+}
+</style>

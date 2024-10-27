@@ -26,8 +26,6 @@ PARTNER_TAG = os.getenv('AMAZON_ASSOCIATE_TAG')
 REGION = 'us-east-1'
 HOST = f"webservices.amazon.com"
 
-print(f"PARTNER_TAG: {PARTNER_TAG}")
-
 # ! SQLITE KEYS
 app.config['SECRET_KEY'] = 'tonto_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///affiliate_website.db'  # SQLite for local development
@@ -61,27 +59,6 @@ class PostForm(FlaskForm):
     submit = SubmitField('Post')
 
 #? --------------------------------------USER ROUTES-----------------------------------
-#* -------------Sign Up---------------
-@app.route('/register', methods=['POST'])
-def register():
-    data = request.json
-    username = data.get('username')
-    email = data.get('email')
-    password = data.get('password')
-
-    # Check if user already exists
-    existing_user = User.query.filter_by(email=email).first()
-    if existing_user:
-        return jsonify({'error': 'User already exists'}), 400
-
-    # Hash password and create user
-    password_hash = generate_password_hash(password)
-    new_user = User(username=username, email=email, password_hash=password_hash)
-    db.session.add(new_user)
-    db.session.commit()
-
-    return jsonify({'message': 'User registered successfully!'}), 201
-
 #* -------------Log In---------------
 @app.route('/login-for-tara', methods=['POST'])
 def login():
@@ -95,6 +72,12 @@ def login():
 
     session['user_id'] = user.id
     return jsonify({'email': user.email, 'username': user.username}), 200
+
+#* -------------Log Out-------------------
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.clear()  
+    return jsonify({'message': 'Logged out successfully'}), 200
 
 # ?-------------------------------AMAZON FETCH ROUTE---------------------------------
 # *------------------------Fetch Product Details-------------------------------

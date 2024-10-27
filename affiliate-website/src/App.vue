@@ -1,6 +1,6 @@
 <template>
 	<div id="app">
-		<nav>
+		<nav class="navbar">
 			<router-link to="/">Home</router-link>
 
 			<router-link
@@ -9,6 +9,7 @@
 				>Find Product</router-link
 			>
 			<button
+				class="logout-btn"
 				v-if="isAuthenticated"
 				@click="logout"
 			>
@@ -35,25 +36,36 @@ export default {
 
 <style scoped>
 nav {
-	margin-bottom: 20px;
+	height: 8dvh;
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	padding: 0 2rem;
+	background-color: var(--primary-dark);
+	border-bottom: solid 6px var(--secondary-dark);
 }
-nav a {
-	margin-right: 10px;
-	text-decoration: none;
-	color: #42b983;
-}
+
 nav a.router-link-exact-active {
 	font-weight: bold;
 }
-button {
-	margin-left: 10px;
-	padding: 5px 10px;
-	color: white;
-	background-color: #42b983;
-	border: none;
-	cursor: pointer;
+
+nav a {
+	transition: var(--transition);
 }
-button:hover {
-	background-color: #358a6e;
+
+nav a:hover {
+	color: var(--secondary-light);
+}
+
+.logout-btn {
+	border: none;
+	color: var(--primary-light);
+	background-color: var(--primary-dark);
+	transition: var(--transition);
+}
+
+.logout-btn:hover {
+	background-color: var(--secondary-dark);
+	border-radius: 12px;
 }
 </style>

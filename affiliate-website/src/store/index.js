@@ -66,9 +66,13 @@ const store = createStore({
 		},
 
 		// ! USER LOGOUT
-		logout({ commit }) {
-			commit('logout'); // Clear user data and authentication state
-			axios.post('/logout'); // Optionally, clear the session in the backend
+		async logout({ commit }) {
+			try {
+				await axios.post('/logout');
+				commit('logout');
+			} catch (error) {
+				console.error('Failed to log out:', error);
+			}
 		},
 	},
 });
