@@ -15,7 +15,12 @@
 					required
 				/>
 			</div>
-			<button type="submit">Fetch Product Details</button>
+			<button
+				class="fetch-product-btn"
+				type="submit"
+			>
+				Fetch Product Details
+			</button>
 		</form>
 
 		<div class="preview-form-structure">
@@ -25,11 +30,13 @@
 				v-if="product && product.title"
 			>
 				<p class="preview-title">{{ product.title }}</p>
-				<img
-					class="preview-img"
-					:src="product.imageUrl"
-					alt=""
-				/>
+				<div class="preview-img-holder">
+					<img
+						class="preview-img"
+						:src="product.imageUrl"
+						alt=""
+					/>
+				</div>
 				<p class="preview-price">{{ product.price }}</p>
 			</div>
 
@@ -148,7 +155,7 @@ export default {
 	flex-direction: column;
 	align-items: center;
 	gap: 1rem;
-	height: 91dvh;
+	height: auto;
 	background-color: var(--primary-light);
 }
 
@@ -162,21 +169,37 @@ export default {
 	display: flex;
 	justify-content: space-evenly;
 	align-items: center;
-	gap: 1rem;
+	gap: 3rem;
+	padding: 1rem 0;
 }
 
+/* THE PREVIEW DIV SECTION */
 .preview-post-structure {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	width: 200px;
-	border: solid 4px var(--primary-dark);
+	width: 300px;
+	color: var(--primary-light);
+	border: solid 4px var(--secondary-dark);
 	border-radius: 12px;
-	background: var(--secondary-light);
+	background: var(--primary-dark);
 }
 
 .preview-title {
 	max-width: 200px;
+	padding: 0.5rem 0;
+	margin: 0;
 }
+
+.preview-img-holder {
+	object-fit: cover;
+}
+
+.preview-img {
+	height: 250px;
+	width: 250px;
+}
+
+/*  */
 </style>

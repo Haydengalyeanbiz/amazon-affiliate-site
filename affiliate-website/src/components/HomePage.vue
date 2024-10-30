@@ -11,14 +11,14 @@ export default {
 </script>
 
 <style scoped>
-.homepage-h1 {
-	color: var(--primary-dark);
-}
-
 .homepage-container {
 	display: flex;
 	justify-content: center;
 	background-color: var(--primary-light);
 	height: 92dvh;
+}
+
+.homepage-h1 {
+	color: var(--primary-dark);
 }
 </style>

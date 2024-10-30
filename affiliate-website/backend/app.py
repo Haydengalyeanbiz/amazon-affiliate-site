@@ -45,15 +45,15 @@ class User(db.Model):
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    price = db.Column(db.Float, nullable=False)
+    title = db.Column(db.String(250), nullable=False)
+    price = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(300), nullable=False)
     image_url = db.Column(db.String(300), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 # Example form using Flask-WTF
 class PostForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
-    price = DecimalField('Price', validators=[DataRequired()])
+    price = StringField('Price', validators=[DataRequired()])
     description = StringField('Description', validators=[DataRequired()])
     image_url = StringField('Image URL', validators=[DataRequired()])
     submit = SubmitField('Post')
@@ -84,7 +84,6 @@ def logout():
 @app.route('/fetch-product-details', methods=['POST'])
 def fetch_product_details():
     asin = request.json.get('asin')
-    print(f"ASIN TAG: {asin}")
     if not asin:
         return jsonify({"error": "ASIN is required"}), 400
 
@@ -101,7 +100,7 @@ def fetch_product_details():
         get_items_resources = [
             GetItemsResource.ITEMINFO_TITLE,
             GetItemsResource.OFFERS_LISTINGS_PRICE,
-            GetItemsResource.IMAGES_PRIMARY_MEDIUM
+            GetItemsResource.IMAGES_PRIMARY_LARGE
         ]
 
         # Create the GetItemsRequest
@@ -118,12 +117,13 @@ def fetch_product_details():
 
         # Process the response and return product info
         if response.items_result and response.items_result.items:
-            item = response.items_result.items[0]  # Get the first item from the response
+            item = response.items_result.items[0]
             product_info = {
                 'title': item.item_info.title.display_value,
                 'price': item.offers.listings[0].price.display_amount if item.offers.listings else "Price unavailable",
-                'imageUrl': item.images.primary.medium.url if item.images and item.images.primary.medium else None
+                'imageUrl': item.images.primary.large.url if item.images and item.images.primary.large else None
             }
+            print(product_info.imageUrl)
             return jsonify(product_info), 200
         else:
             return jsonify({"error": "Product not found"}), 404
