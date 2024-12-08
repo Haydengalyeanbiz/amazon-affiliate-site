@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
+from datetime import datetime
 import requests
 import os
 from dotenv import load_dotenv
@@ -47,15 +48,18 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(250), nullable=False)
     price = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(300), nullable=False)
+    description = db.Column(db.String(1000), nullable=False)
     image_url = db.Column(db.String(300), nullable=False)
+    link_url = db.Column(db.String(1000), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-# Example form using Flask-WTF
+    created_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
 class PostForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     price = StringField('Price', validators=[DataRequired()])
     description = StringField('Description', validators=[DataRequired()])
     image_url = StringField('Image URL', validators=[DataRequired()])
+    link_url = StringField('Link URL', validators=[DataRequired()])
     submit = SubmitField('Post')
 
 #? --------------------------------------USER ROUTES-----------------------------------
@@ -118,12 +122,20 @@ def fetch_product_details():
         # Process the response and return product info
         if response.items_result and response.items_result.items:
             item = response.items_result.items[0]
+
+            title = item.item_info.title.display_value if item.item_info and item.item_info.title else "Title unavailable"
+            price = (item.offers.listings[0].price.display_amount 
+                     if item.offers and item.offers.listings and item.offers.listings[0].price 
+                     else "Price unavailable")
+            imageUrl = (item.images.primary.large.url 
+                        if item.images and item.images.primary and item.images.primary.large 
+                        else None)
+
             product_info = {
-                'title': item.item_info.title.display_value,
-                'price': item.offers.listings[0].price.display_amount if item.offers.listings else "Price unavailable",
-                'imageUrl': item.images.primary.large.url if item.images and item.images.primary.large else None
+                'title': title,
+                'price': price,
+                'imageUrl': imageUrl
             }
-            print(product_info.imageUrl)
             return jsonify(product_info), 200
         else:
             return jsonify({"error": "Product not found"}), 404
@@ -158,28 +170,30 @@ def get_posts():
 def submit_post():
     if 'user_id' not in session:
         return jsonify({'error': 'Unauthorized'}), 401
+    
+    data = request.json
+
+    user_id = session['user_id']
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    
+    required_fields = ['title', 'price', 'description', 'image_url', 'link_url']
+    for field in required_fields:
+        if field not in data:
+            return jsonify({'error': f'{field} is required'}), 400
 
     # Logic for handling the form submission
-    form = PostForm()
-    if form.validate_on_submit():
-        # Get the logged-in user
-        user_id = session['user_id']
-        user = User.query.get(user_id)
-
-        # Create and save the post
-        new_post = Post(
-            title=form.title.data,
-            price=form.price.data,
-            description=form.description.data,
-            image_url=form.image_url.data,
-            user_id=user.id
-        )
-        db.session.add(new_post)
-        db.session.commit()
-
-        return jsonify({'message': 'Post submitted successfully'}), 201
-
-    return jsonify({'error': 'Form validation failed'}), 400
+    new_post = Post(
+        title=data['title'],
+        price=data['price'],
+        description=data['description'],
+        image_url=data['image_url'],
+        link_url=data['link_url'],
+        user_id=user.id,
+    )
+    db.session.add(new_post)
+    db.session.commit()
 
 
 if __name__ == '__main__':

@@ -2,6 +2,7 @@
 	<div class="find-product-form-container">
 		<h1>Find Amazon Product</h1>
 		<form
+			v-if="!product || !product.title"
 			@submit.prevent="fetchProductDetails"
 			class="fetch-form"
 		>
@@ -24,27 +25,23 @@
 		</form>
 
 		<div class="preview-form-structure">
-			<!-- visual structure of the new post before submission -->
 			<div
 				class="preview-post-structure"
-				v-if="product && product.title"
+				v-if="postForm.title"
 			>
-				<p class="preview-title">{{ product.title }}</p>
-				<div class="preview-img-holder">
-					<img
-						class="preview-img"
-						:src="product.imageUrl"
-						alt=""
-					/>
-				</div>
-				<p class="preview-price">{{ product.price }}</p>
+				<img
+					class="preview-img"
+					:src="postForm.imageUrl || ''"
+					alt="Product Image"
+				/>
+				<p class="preview-title">{{ postForm.title || '' }}</p>
+				<p class="preview-price">{{ postForm.price || '' }}</p>
+				<p class="preview-description">{{ postForm.description || '' }}</p>
 			</div>
-
-			<!-- Form to display product details and allow for a new post submission -->
 			<form
 				v-if="product && product.title"
-				@submit.prevent="submitPost"
-				class=""
+				@submit.prevent="submitForm"
+				class="add-post-form"
 			>
 				<div>
 					<label for="title">Title:</label>
@@ -79,7 +76,7 @@
 				</div>
 
 				<div>
-					<label for="image">Image URL:</label>
+					<label for="image">Image URL: DON'T CHANGE!</label>
 					<input
 						type="text"
 						id="image"
@@ -89,7 +86,22 @@
 					/>
 				</div>
 
-				<button type="submit">Submit Post</button>
+				<div>
+					<label for="link">Product Link: DON'T CHANGE!</label>
+					<input
+						type="text"
+						id="link"
+						v-model="affiliateLink"
+						required
+					/>
+				</div>
+
+				<button
+					class="submit-btn"
+					type="submit"
+				>
+					Submit Post
+				</button>
 			</form>
 
 			<p v-if="error">{{ error }}</p>
@@ -99,6 +111,7 @@
 
 <script>
 import axios from 'axios';
+import { mapActions } from 'vuex';
 
 export default {
 	data() {
@@ -115,6 +128,7 @@ export default {
 		};
 	},
 	methods: {
+		...mapActions(['submitPost']),
 		extractASIN(affiliateLink) {
 			const regex = /([A-Z0-9]{10})(?:[/?]|$)/;
 			const match = affiliateLink.match(regex);
@@ -145,6 +159,14 @@ export default {
 				this.error = 'Failed to fetch product details. Please try again.';
 			}
 		},
+		async submitForm() {
+			try {
+				await this.submitPost(this.postForm);
+			} catch (error) {
+				console.error('Error submitting post:', error);
+				this.error = 'Failed to submit post. Please try again.';
+			}
+		},
 	},
 };
 </script>
@@ -155,7 +177,7 @@ export default {
 	flex-direction: column;
 	align-items: center;
 	gap: 1rem;
-	height: auto;
+	height: 120dvh;
 	background-color: var(--primary-light);
 }
 
@@ -173,32 +195,57 @@ export default {
 	padding: 1rem 0;
 }
 
-/* THE PREVIEW DIV SECTION */
 .preview-post-structure {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;
-	width: 300px;
+	height: 600px;
+	width: 400px;
+	gap: 1rem;
 	color: var(--primary-light);
 	border: solid 4px var(--secondary-dark);
 	border-radius: 12px;
-	background: var(--primary-dark);
+	background-color: var(--primary-dark);
+}
+.preview-post-structure p {
+	margin: 0;
+	padding: 0;
 }
 
 .preview-title {
-	max-width: 200px;
-	padding: 0.5rem 0;
+	max-width: 250px;
+	padding: 0;
 	margin: 0;
 }
 
-.preview-img-holder {
+.preview-img {
+	width: 100%;
+	height: 400px;
 	object-fit: cover;
+	object-position: center;
+	border-radius: 12px;
 }
 
-.preview-img {
-	height: 250px;
-	width: 250px;
+.add-post-form {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.add-post-form div {
+	display: flex;
+	flex-direction: column;
+}
+
+.add-post-form input {
+	width: 500px;
+}
+
+.add-post-form textarea {
+	max-width: 500px;
+	min-width: 500px;
+	max-height: 150px;
+	min-height: 150px;
 }
 
 /*  */
