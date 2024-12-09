@@ -34,9 +34,11 @@
 					:src="postForm.imageUrl || ''"
 					alt="Product Image"
 				/>
-				<p class="preview-title">{{ postForm.title || '' }}</p>
-				<p class="preview-price">{{ postForm.price || '' }}</p>
-				<p class="preview-description">{{ postForm.description || '' }}</p>
+				<div>
+					<p class="preview-title">{{ postForm.title || '' }}</p>
+					<p class="preview-price">{{ postForm.price || '' }}</p>
+					<p class="preview-description">{{ postForm.description || '' }}</p>
+				</div>
 			</div>
 			<form
 				v-if="product && product.title"
@@ -159,9 +161,31 @@ export default {
 				this.error = 'Failed to fetch product details. Please try again.';
 			}
 		},
+		// Vuex Action: submitPost
+		async submitPost({ state }, postData) {
+			console.log(this.$store.state);
+			console.log('isAuthenticated:', state.isAuthenticated);
+			if (!state.isAuthenticated) {
+				throw new Error('User is not authenticated');
+			}
+			try {
+				const response = await axios.post('/submit-post', postData);
+				return response.data;
+			} catch (error) {
+				console.error('Failed to submit post:', error);
+				throw error;
+			}
+		},
 		async submitForm() {
 			try {
-				await this.submitPost(this.postForm);
+				await this.$store.dispatch('submitPost', {
+					title: this.postForm.title,
+					price: this.postForm.price,
+					description: this.postForm.description,
+					image_url: this.postForm.imageUrl,
+					link_url: this.affiliateLink,
+				});
+				alert('Post submitted successfully!');
 			} catch (error) {
 				console.error('Error submitting post:', error);
 				this.error = 'Failed to submit post. Please try again.';
@@ -173,6 +197,8 @@ export default {
 
 <style>
 .find-product-form-container {
+	position: relative;
+	padding-top: 8dvh;
 	display: flex;
 	flex-direction: column;
 	align-items: center;

@@ -1,7 +1,7 @@
 <template>
 	<div id="app">
 		<nav class="navbar">
-			<router-link to="/">Home</router-link>
+			<router-link to="/">IndyCouponMama</router-link>
 
 			<router-link
 				v-if="isAuthenticated"
@@ -36,7 +36,10 @@ export default {
 
 <style scoped>
 nav {
+	position: fixed;
+	z-index: 1000;
 	height: 8dvh;
+	width: 100%;
 	display: flex;
 	gap: 1rem;
 	align-items: center;

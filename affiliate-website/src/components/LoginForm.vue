@@ -69,6 +69,7 @@ export default {
 				// Call the Vuex login action
 				await this.login(credentials); // Calls the Vuex action, not this method recursively
 				console.log('Login successful');
+				console.log(this.$store.state.isAuthenticated);
 
 				// Redirect to home page after successful login
 				this.$router.push('/');
@@ -85,7 +86,7 @@ export default {
 
 <style>
 .login-form-container {
-	height: 88dvh;
+	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -100,6 +101,7 @@ export default {
 	gap: 1rem;
 	width: 300px;
 }
+
 .label-input {
 	display: flex;
 	flex-direction: column;

@@ -11,6 +11,8 @@ flask-sqlalchemy = "*"
 flask-migrate = "*"
 flask-cors = "*"
 python-dotenv = "*"
+flask-session = "*"
+flask-login = "*"
 
 [dev-packages]
 

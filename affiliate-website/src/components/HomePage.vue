@@ -15,6 +15,7 @@ export default {
 	display: flex;
 	justify-content: center;
 	background-color: var(--primary-light);
+	margin: 8dvh 0 0;
 	height: 92dvh;
 }
 

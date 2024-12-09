@@ -6,7 +6,6 @@ import './styles.css';
 
 const app = createApp(App);
 
-// Enable Vue Devtools in development mode
 if (process.env.NODE_ENV === 'development') {
 	app.config.devtools = true;
 }

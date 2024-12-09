@@ -2,6 +2,7 @@ import { createStore } from 'vuex';
 import axios from 'axios';
 
 axios.defaults.baseURL = 'http://127.0.0.1:5000';
+axios.defaults.withCredentials = true;
 
 const store = createStore({
 	state() {
@@ -17,7 +18,7 @@ const store = createStore({
 		},
 		setUser(state, user) {
 			state.user = user;
-			state.isAuthenticated = !!user;
+			state.isAuthenticated = true;
 		},
 		logout(state) {
 			state.user = null;
@@ -25,6 +26,21 @@ const store = createStore({
 		},
 	},
 	actions: {
+		// ! USER LOGIN
+		async login({ commit }, credentials) {
+			try {
+				const response = await axios.post('/login-for-tara', credentials);
+				commit('setUser', response.data.user);
+				console.log('Login successful');
+				return response.data;
+			} catch (error) {
+				if (error.response && error.response.status === 401) {
+					throw new Error('Invalid email or password');
+				}
+				console.error('Failed to log in:', error);
+				throw error;
+			}
+		},
 		// ! GET ALL POSTS
 		async fetchPosts({ commit }) {
 			try {
@@ -42,29 +58,15 @@ const store = createStore({
 			}
 
 			try {
-				const response = await axios.post('/submit-post', postData);
+				const response = await axios.post('/submit-post', postData, {
+					withCredentials: true,
+				});
 				return response.data;
 			} catch (error) {
 				console.error('Failed to submit post:', error);
 				throw error;
 			}
 		},
-
-		// ! USER LOGIN
-		async login({ commit }, credentials) {
-			try {
-				const response = await axios.post('/login-for-tara', credentials);
-				commit('setUser', response.data);
-				return response.data;
-			} catch (error) {
-				if (error.response && error.response.status === 401) {
-					throw new Error('Invalid email or password');
-				}
-				console.error('Failed to log in:', error);
-				throw error;
-			}
-		},
-
 		// ! USER LOGOUT
 		async logout({ commit }) {
 			try {

@@ -1,13 +1,15 @@
 from flask import Flask, jsonify, request, session
+from flask_session import Session
 from flask_wtf import FlaskForm
 from wtforms import StringField, DecimalField, SubmitField
 from wtforms.validators import DataRequired
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
 from datetime import datetime
-import requests
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -17,9 +19,36 @@ from paapi5_python_sdk.models.get_items_resource import GetItemsResource
 from paapi5_python_sdk.models.partner_type import PartnerType
 from paapi5_python_sdk.rest import ApiException
 
-
 app = Flask(__name__)
-CORS(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+@login_manager.unauthorized_handler
+def unauthorized_callback():
+    return jsonify({'error': 'Unauthorized'}), 401
+
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///affiliate_website.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# ! SQLITE KEYS
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_FILE_DIR'] = './.flask_session/'
+
+db = SQLAlchemy(app)
+Migrate(app, db)  
+CORS(app, supports_credentials=True, resources={r"/*": {"origins": "http://localhost:8080"}})
+
+Session(app)
+
 # ! AMAZON KEYS
 ACCESS_KEY = os.getenv('AMAZON_ACCESS_KEY')
 SECRET_KEY = os.getenv('AMAZON_SECRET_KEY')
@@ -27,22 +56,19 @@ PARTNER_TAG = os.getenv('AMAZON_ASSOCIATE_TAG')
 REGION = 'us-east-1'
 HOST = f"webservices.amazon.com"
 
-# ! SQLITE KEYS
-app.config['SECRET_KEY'] = 'tonto_secret_key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///affiliate_website.db'  # SQLite for local development
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)  # Bind Flask-Migrate to the app and db
 
-# Models
-class User(db.Model):
+#? ------------------------ Models ------------------------------
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), nullable=False, unique=True)
     email = db.Column(db.String(120), nullable=False, unique=True)
     password_hash = db.Column(db.String(128), nullable=False)
 
     posts = db.relationship('Post', backref='author', lazy=True)
+
+    def to_dict(self):
+        return {'id': self.id, 'username': self.username, 'email': self.email}
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -67,20 +93,24 @@ class PostForm(FlaskForm):
 @app.route('/login-for-tara', methods=['POST'])
 def login():
     data = request.json
-    email = data.get('email')
-    password = data.get('password')
 
-    user = User.query.filter_by(email=email).first()
-    if not user or not check_password_hash(user.password_hash, password):
-        return jsonify({'error': 'Invalid email or password'}), 401
+    if not data or 'email' not in data or 'password' not in data:
+        return jsonify({'error': 'Email and password are required'}), 400
 
-    session['user_id'] = user.id
-    return jsonify({'email': user.email, 'username': user.username}), 200
+    user = User.query.filter_by(email=data['email']).first()
+
+    if user and check_password_hash(user.password_hash, data['password']):
+        login_user(user)  # Log in the user using Flask-Login
+        return jsonify({'message': 'Login successful', 'user': user.to_dict()})
+
+    return jsonify({'error': 'Invalid credentials'}), 401
+
 
 #* -------------Log Out-------------------
 @app.route('/logout', methods=['POST'])
+@login_required
 def logout():
-    session.clear()  
+    logout_user()  # Log out the user using Flask-Login
     return jsonify({'message': 'Logged out successfully'}), 200
 
 # ?-------------------------------AMAZON FETCH ROUTE---------------------------------
@@ -167,33 +197,27 @@ def get_posts():
 
 #*------------------------Submit a Post----------------------------
 @app.route('/submit-post', methods=['POST'])
+@login_required
 def submit_post():
-    if 'user_id' not in session:
-        return jsonify({'error': 'Unauthorized'}), 401
-    
-    data = request.json
+    form = PostForm(data=request.json)
 
-    user_id = session['user_id']
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-    
-    required_fields = ['title', 'price', 'description', 'image_url', 'link_url']
-    for field in required_fields:
-        if field not in data:
-            return jsonify({'error': f'{field} is required'}), 400
+    if not form.validate():
+        errors = {field: error[0] for field, error in form.errors.items()}
+        return jsonify({'error': 'Form validation failed', 'details': errors}), 400
 
-    # Logic for handling the form submission
     new_post = Post(
-        title=data['title'],
-        price=data['price'],
-        description=data['description'],
-        image_url=data['image_url'],
-        link_url=data['link_url'],
-        user_id=user.id,
+        title=form.title.data,
+        price=form.price.data,
+        description=form.description.data,
+        image_url=form.image_url.data,
+        link_url=form.link_url.data,
+        user_id=current_user.id,  # Use Flask-Login's current_user
+        created_date=datetime.utcnow(),
     )
+
     db.session.add(new_post)
     db.session.commit()
+    return jsonify({'message': 'Post created successfully'}), 201
 
 
 if __name__ == '__main__':
