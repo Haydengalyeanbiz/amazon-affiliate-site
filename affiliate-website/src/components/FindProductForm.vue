@@ -147,10 +147,9 @@ export default {
 			}
 
 			try {
-				const response = await axios.post(
-					'http://127.0.0.1:5000/fetch-product-details',
-					{ asin }
-				);
+				const response = await axios.post('/fetch-product-details', {
+					asin,
+				});
 				this.product = response.data;
 
 				this.postForm.title = this.product?.title || '';
@@ -169,7 +168,7 @@ export default {
 				throw new Error('User is not authenticated');
 			}
 			try {
-				const response = await axios.post('/submit-post', postData);
+				const response = await axios.post('/api/submit-post', postData);
 				return response.data;
 			} catch (error) {
 				console.error('Failed to submit post:', error);
@@ -185,7 +184,6 @@ export default {
 					image_url: this.postForm.imageUrl,
 					link_url: this.affiliateLink,
 				});
-				alert('Post submitted successfully!');
 			} catch (error) {
 				console.error('Error submitting post:', error);
 				this.error = 'Failed to submit post. Please try again.';

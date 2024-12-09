@@ -1,8 +1,19 @@
 import { createStore } from 'vuex';
 import axios from 'axios';
 
-axios.defaults.baseURL = 'http://127.0.0.1:5000';
+axios.defaults.baseURL = '/api';
 axios.defaults.withCredentials = true;
+
+axios.interceptors.request.use((config) => {
+	const csrfToken = document.cookie
+		.split('; ')
+		.find((row) => row.startsWith('csrf_token='))
+		?.split('=')[1];
+	if (csrfToken) {
+		config.headers['X-CSRF-Token'] = csrfToken;
+	}
+	return config;
+});
 
 const store = createStore({
 	state() {
@@ -30,8 +41,9 @@ const store = createStore({
 		async login({ commit }, credentials) {
 			try {
 				const response = await axios.post('/login-for-tara', credentials);
+				console.log('Login response:', response.data);
 				commit('setUser', response.data.user);
-				console.log('Login successful');
+				console.log('User set in state:', response.data.user);
 				return response.data;
 			} catch (error) {
 				if (error.response && error.response.status === 401) {
@@ -53,6 +65,7 @@ const store = createStore({
 
 		// ! SUBMIT NEW POST
 		async submitPost({ state }, postData) {
+			console.log('State before submitting post:', state.isAuthenticated);
 			if (!state.isAuthenticated) {
 				throw new Error('User is not authenticated');
 			}

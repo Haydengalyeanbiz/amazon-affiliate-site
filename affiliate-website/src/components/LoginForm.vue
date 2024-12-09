@@ -69,7 +69,7 @@ export default {
 				// Call the Vuex login action
 				await this.login(credentials); // Calls the Vuex action, not this method recursively
 				console.log('Login successful');
-				console.log(this.$store.state.isAuthenticated);
+				console.log('Vuex state after login:', this.$store.state);
 
 				// Redirect to home page after successful login
 				this.$router.push('/');

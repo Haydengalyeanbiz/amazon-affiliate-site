@@ -1,6 +1,7 @@
-from flask import Flask, jsonify, request, session
+from flask import Flask, jsonify, request, session, make_response
 from flask_session import Session
 from flask_wtf import FlaskForm
+from flask_wtf.csrf import CSRFProtect, generate_csrf
 from wtforms import StringField, DecimalField, SubmitField
 from wtforms.validators import DataRequired
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -23,7 +24,6 @@ app = Flask(__name__)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -42,10 +42,15 @@ app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_FILE_DIR'] = './.flask_session/'
+app.config['SESSION_COOKIE_DOMAIN'] = 'localhost'
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SECURE'] = False  # Set to True if using HTTPS
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 db = SQLAlchemy(app)
 Migrate(app, db)  
-CORS(app, supports_credentials=True, resources={r"/*": {"origins": "http://localhost:8080"}})
+CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "http://localhost:8080"}})
+csrf = CSRFProtect(app)
 
 Session(app)
 
@@ -93,16 +98,25 @@ class PostForm(FlaskForm):
 @app.route('/login-for-tara', methods=['POST'])
 def login():
     data = request.json
-
-    if not data or 'email' not in data or 'password' not in data:
+    if 'email' not in data or 'password' not in data:
         return jsonify({'error': 'Email and password are required'}), 400
 
     user = User.query.filter_by(email=data['email']).first()
-
     if user and check_password_hash(user.password_hash, data['password']):
-        login_user(user)  # Log in the user using Flask-Login
-        return jsonify({'message': 'Login successful', 'user': user.to_dict()})
+        login_user(user)  # Logs in user and sets the session cookie
+        
+        # Serialize user object to a dictionary
+        user_data = {
+            "id": user.id,
+            "email": user.email,
+            "username": user.username
+        }
+        
+        response = make_response(jsonify({"message": "Login successful", "user": user_data}))
+        response.set_cookie('csrf_token', generate_csrf(), httponly=False, samesite='Lax')
+        return response
 
+    print("Login failed: Invalid credentials")
     return jsonify({'error': 'Invalid credentials'}), 401
 
 
@@ -199,7 +213,9 @@ def get_posts():
 @app.route('/submit-post', methods=['POST'])
 @login_required
 def submit_post():
+    print("Received CSRF Token:", request.headers.get('X-CSRF-Token'))
     form = PostForm(data=request.json)
+    form['csrf_token'].data = request.cookies.get('csrf_access_token')
 
     if not form.validate():
         errors = {field: error[0] for field, error in form.errors.items()}
@@ -211,7 +227,7 @@ def submit_post():
         description=form.description.data,
         image_url=form.image_url.data,
         link_url=form.link_url.data,
-        user_id=current_user.id,  # Use Flask-Login's current_user
+        user_id=current_user.id, 
         created_date=datetime.utcnow(),
     )
 
