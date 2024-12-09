@@ -96,6 +96,7 @@ class PostForm(FlaskForm):
 #? --------------------------------------USER ROUTES-----------------------------------
 #* -------------Log In---------------
 @app.route('/login-for-tara', methods=['POST'])
+@csrf.exempt
 def login():
     data = request.json
     if 'email' not in data or 'password' not in data:
@@ -130,6 +131,7 @@ def logout():
 # ?-------------------------------AMAZON FETCH ROUTE---------------------------------
 # *------------------------Fetch Product Details-------------------------------
 @app.route('/fetch-product-details', methods=['POST'])
+@login_required
 def fetch_product_details():
     asin = request.json.get('asin')
     if not asin:
@@ -203,7 +205,7 @@ def get_posts():
             'price': post.price,
             'description': post.description,
             'image_url': post.image_url,
-            'author': post.author.username  # Get the author's username
+            'link_url': post.link_url # Get the author's username
         }
         result.append(post_data)
 

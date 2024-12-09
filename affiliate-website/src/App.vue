@@ -1,20 +1,35 @@
 <template>
 	<div id="app">
 		<nav class="navbar">
-			<router-link to="/">IndyCouponMama</router-link>
-
 			<router-link
-				v-if="isAuthenticated"
-				to="/find-product"
-				>Find Product</router-link
+				class="navbar-logo"
+				to="/"
+				>IndyMamaDeals</router-link
 			>
-			<button
-				class="logout-btn"
-				v-if="isAuthenticated"
-				@click="logout"
+			<div
+				v-if="!isAuthenticated"
+				class="social-links"
 			>
-				Logout
-			</button>
+				<a href="https://www.facebook.com/indycouponmama">Facebook</a>
+				<a href="https://instagram.com/indy_mama_deals">Instagram</a>
+			</div>
+			<div
+				v-if="isAuthenticated"
+				class="navbar-items"
+			>
+				<router-link
+					v-if="isAuthenticated"
+					to="/find-product"
+					>Find Product</router-link
+				>
+				<button
+					class="logout-btn"
+					v-if="isAuthenticated"
+					@click="logout"
+				>
+					Logout
+				</button>
+			</div>
 		</nav>
 		<router-view />
 	</div>
@@ -41,11 +56,30 @@ nav {
 	height: 8dvh;
 	width: 100%;
 	display: flex;
-	gap: 1rem;
+	justify-content: space-between;
 	align-items: center;
 	padding: 0 2rem;
 	background-color: var(--primary-dark);
 	border-bottom: solid 6px var(--secondary-dark);
+	box-sizing: border-box;
+}
+
+.navbar-logo {
+	font-family: var(--header-ff);
+}
+
+.social-links {
+	display: flex;
+	gap: 1rem;
+}
+
+.navbar-items {
+	display: flex;
+	gap: 1.5rem;
+}
+
+nav a {
+	font-family: var(--header-ff);
 }
 
 nav a.router-link-exact-active {

@@ -29,15 +29,17 @@
 				class="preview-post-structure"
 				v-if="postForm.title"
 			>
-				<img
-					class="preview-img"
-					:src="postForm.imageUrl || ''"
-					alt="Product Image"
-				/>
-				<div>
+				<div class="top-preview">
+					<img
+						class="preview-img"
+						:src="postForm.imageUrl || ''"
+						alt="Product Image"
+					/>
 					<p class="preview-title">{{ postForm.title || '' }}</p>
-					<p class="preview-price">{{ postForm.price || '' }}</p>
+				</div>
+				<div class="bottom-preview">
 					<p class="preview-description">{{ postForm.description || '' }}</p>
+					<p class="preview-price">{{ postForm.price || '' }}</p>
 				</div>
 			</div>
 			<form
@@ -184,6 +186,7 @@ export default {
 					image_url: this.postForm.imageUrl,
 					link_url: this.affiliateLink,
 				});
+				this.$router.push('/');
 			} catch (error) {
 				console.error('Error submitting post:', error);
 				this.error = 'Failed to submit post. Please try again.';
@@ -214,7 +217,6 @@ export default {
 .preview-form-structure {
 	display: flex;
 	justify-content: space-evenly;
-	align-items: center;
 	gap: 3rem;
 	padding: 1rem 0;
 }
@@ -223,31 +225,50 @@ export default {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	height: 600px;
-	width: 400px;
+	gap: 1rem;
+	height: auto;
+	width: 404px;
 	gap: 1rem;
 	color: var(--primary-light);
-	border: solid 4px var(--secondary-dark);
 	border-radius: 12px;
 	background-color: var(--primary-dark);
 }
+
+.top-preview {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+}
+
+.bottom-preview {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+	padding: 0 1rem 1rem;
+}
+
 .preview-post-structure p {
 	margin: 0;
 	padding: 0;
 }
 
 .preview-title {
-	max-width: 250px;
+	max-width: 350px;
 	padding: 0;
 	margin: 0;
+	font-family: var(--header-ff);
+	font-size: var(--fs-medium);
 }
 
 .preview-img {
-	width: 100%;
+	width: 400px;
 	height: 400px;
 	object-fit: cover;
 	object-position: center;
 	border-radius: 12px;
+	border: solid 4px var(--secondary-dark);
 }
 
 .add-post-form {
