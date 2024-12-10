@@ -35,15 +35,16 @@ const store = createStore({
 			state.user = null;
 			state.isAuthenticated = false;
 		},
+		removePost(state, postId) {
+			state.posts = state.posts.filter((post) => post.id !== postId);
+		},
 	},
 	actions: {
 		// ! USER LOGIN
 		async login({ commit }, credentials) {
 			try {
 				const response = await axios.post('/login-for-tara', credentials);
-				console.log('Login response:', response.data);
 				commit('setUser', response.data.user);
-				console.log('User set in state:', response.data.user);
 				return response.data;
 			} catch (error) {
 				if (error.response && error.response.status === 401) {
@@ -51,6 +52,15 @@ const store = createStore({
 				}
 				console.error('Failed to log in:', error);
 				throw error;
+			}
+		},
+		// ! USER LOGOUT
+		async logout({ commit }) {
+			try {
+				await axios.post('/logout');
+				commit('logout');
+			} catch (error) {
+				console.error('Failed to log out:', error);
 			}
 		},
 		// ! GET ALL POSTS
@@ -65,7 +75,6 @@ const store = createStore({
 
 		// ! SUBMIT NEW POST
 		async submitPost({ state }, postData) {
-			console.log('State before submitting post:', state.isAuthenticated);
 			if (!state.isAuthenticated) {
 				throw new Error('User is not authenticated');
 			}
@@ -80,14 +89,42 @@ const store = createStore({
 				throw error;
 			}
 		},
-		// ! USER LOGOUT
-		async logout({ commit }) {
+		// ! FETCH A SINGLE POST
+		async fetchSinglePost(_, postId) {
+			// Replace `commit` with `_`
 			try {
-				await axios.post('/logout');
-				commit('logout');
+				const response = await axios.get(`/api/posts/${postId}`);
+				return response.data; // Return the post data
 			} catch (error) {
-				console.error('Failed to log out:', error);
+				console.error('Failed to fetch single post:', error);
+				throw error;
 			}
+		},
+		// ! UPDATE A POST
+		async updatePost(_, updatedPost) {
+			try {
+				const response = await axios.put(
+					`/api/posts/${updatedPost.id}`,
+					updatedPost
+				);
+				console.log('Post updated successfully:', response.data);
+				return response.data; // Return the updated data if needed
+			} catch (error) {
+				console.error('Failed to update post:', error);
+				throw error;
+			}
+		},
+		// ! DELETE A POST
+		async deletePost({ commit }, postId) {
+			return axios
+				.delete(`/posts/${postId}`)
+				.then(() => {
+					commit('removePost', postId); // Update the state
+				})
+				.catch((error) => {
+					console.error('Failed to delete post:', error);
+					throw error;
+				});
 		},
 	},
 });

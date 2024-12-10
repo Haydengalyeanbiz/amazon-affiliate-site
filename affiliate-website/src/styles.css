@@ -24,6 +24,7 @@
     --primary-light: #F2E5BF;
     --secondary-dark: #CB6040;
     --secondary-light: #FD8B51;
+    --danger-clr: red;
 
     /* !ANIMATIONS */
     --transition: all .2s ease-in-out;

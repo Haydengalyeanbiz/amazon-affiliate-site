@@ -197,25 +197,44 @@ def fetch_product_details():
 #*--------------------------Get All Posts------------------------
 @app.route('/posts', methods=['GET'])
 def get_posts():
-    posts = Post.query.all()
+    posts = Post.query.order_by(Post.created_date.desc()).all()
     result = []
     for post in posts:
         post_data = {
+            'id': post.id,
             'title': post.title,
             'price': post.price,
             'description': post.description,
             'image_url': post.image_url,
-            'link_url': post.link_url # Get the author's username
+            'link_url': post.link_url,
+            'author_id': post.user_id
         }
         result.append(post_data)
 
     return jsonify(result), 200
 
+#*--------------------------Get A Single Post------------------------
+@app.route('/api/posts/<int:post_id>', methods=['GET'])
+def get_single_post(post_id):
+    post = Post.query.get(post_id)
+    if not post:
+        return jsonify({'error': 'Post not found'}), 404
+
+    post_data = {
+        'id': post.id,
+        'title': post.title,
+        'price': post.price,
+        'description': post.description,
+        'image_url': post.image_url,
+        'link_url': post.link_url,
+        'author_id': post.user_id,  # Include author information if needed
+    }
+    return jsonify(post_data), 200
+
 #*------------------------Submit a Post----------------------------
 @app.route('/submit-post', methods=['POST'])
 @login_required
 def submit_post():
-    print("Received CSRF Token:", request.headers.get('X-CSRF-Token'))
     form = PostForm(data=request.json)
     form['csrf_token'].data = request.cookies.get('csrf_access_token')
 
@@ -236,6 +255,66 @@ def submit_post():
     db.session.add(new_post)
     db.session.commit()
     return jsonify({'message': 'Post created successfully'}), 201
+
+#*------------------------Update a Post----------------------------
+@app.route('/api/posts/<int:post_id>', methods=['PUT'])
+def update_post(post_id):
+    data = request.json  
+
+    post = Post.query.get(post_id)
+    if not post:
+        return jsonify({'error': 'Post not found'}), 404
+
+    # Update the post fields with the new data
+    if 'title' in data:
+        post.title = data['title']
+    if 'price' in data:
+        post.price = data['price']
+    if 'description' in data:
+        post.description = data['description']
+    if 'image_url' in data:
+        post.image_url = data['image_url']
+    if 'link_url' in data:
+        post.link_url = data['link_url']
+
+    try:
+        db.session.commit()
+        return jsonify({
+            'message': 'Post updated successfully',
+            'post': {
+                'id': post.id,
+                'title': post.title,
+                'price': post.price,
+                'description': post.description,
+                'image_url': post.image_url,
+                'link_url': post.link_url
+            }
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Failed to update post', 'details': str(e)}), 500
+
+
+#*------------------------Delete a Post----------------------------
+@app.route('/posts/<int:post_id>', methods=['DELETE'])
+@login_required
+def delete_post(post_id):
+    post = Post.query.get(post_id)
+
+    if not post:
+        return jsonify({'error': 'Post not found'}), 404
+
+    if post.user_id != current_user.id:
+        return jsonify({'error': 'Unauthorized to delete this post'}), 403
+
+    try:
+        db.session.delete(post)
+        db.session.commit()
+        return jsonify({'message': 'Post deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Failed to delete post', 'details': str(e)}), 500
+
 
 
 if __name__ == '__main__':
