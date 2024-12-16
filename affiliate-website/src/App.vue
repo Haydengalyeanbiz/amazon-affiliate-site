@@ -19,8 +19,13 @@
 			>
 				<router-link
 					v-if="isAuthenticated"
+					to="/find-store-product"
+					>Add Store Product</router-link
+				>
+				<router-link
+					v-if="isAuthenticated"
 					to="/find-product"
-					>Find Product</router-link
+					>Add Amazon Product</router-link
 				>
 				<button
 					class="logout-btn"
@@ -32,14 +37,19 @@
 			</div>
 		</nav>
 		<router-view />
+		<FooterComponent />
 	</div>
 </template>
 
 <script>
+import FooterComponent from './components/FooterComponent.vue';
 import { mapState, mapActions } from 'vuex';
 
 export default {
 	name: 'App',
+	components: {
+		FooterComponent,
+	},
 	computed: {
 		...mapState(['isAuthenticated']),
 	},
@@ -75,6 +85,8 @@ nav {
 
 .navbar-items {
 	display: flex;
+	justify-content: center;
+	align-items: center;
 	gap: 1.5rem;
 }
 
@@ -95,6 +107,7 @@ nav a:hover {
 }
 
 .logout-btn {
+	font-family: var(--header-ff);
 	border: none;
 	color: var(--primary-light);
 	background-color: var(--primary-dark);
@@ -102,7 +115,6 @@ nav a:hover {
 }
 
 .logout-btn:hover {
-	background-color: var(--secondary-dark);
-	border-radius: 12px;
+	color: var(--secondary-dark);
 }
 </style>

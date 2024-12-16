@@ -122,7 +122,7 @@ export default {
 
 .posts-container {
 	display: grid;
-	grid-template-columns: repeat(4, 1fr);
+	grid-template-columns: repeat(3, 1fr);
 	justify-content: center;
 	margin: 0 auto;
 	gap: 2rem;
@@ -134,7 +134,7 @@ export default {
 	justify-content: space-between;
 	border-radius: 8px;
 	/* padding: 0 1rem 0; */
-	max-width: 300px;
+	max-width: 360px;
 	text-align: center;
 	background-color: var(--primary-dark);
 	border: 4px solid var(--secondary-dark);
@@ -150,7 +150,7 @@ export default {
 .post-image {
 	width: 100%;
 	height: auto;
-	max-height: 300px;
+	max-height: 360px;
 	object-fit: cover;
 	border-radius: 6px;
 }
@@ -170,6 +170,7 @@ export default {
 	font-weight: var(--fw-bold);
 	background-color: var(--primary-light);
 	border-radius: 12px;
+	border: solid 3px var(--secondary-dark);
 	padding: 0.3rem 0.5rem;
 }
 
@@ -206,7 +207,7 @@ export default {
 
 .edit-btn,
 .delete-btn {
-	padding: 0.3rem;
+	padding: 0.3rem 0.5rem;
 	border-radius: 12px;
 	border: none;
 	background-color: var(--primary-light);

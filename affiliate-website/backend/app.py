@@ -34,12 +34,13 @@ def unauthorized_callback():
     return jsonify({'error': 'Unauthorized'}), 401
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///affiliate_website.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # ! SQLITE KEYS
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_PERMANENT'] = True
+
 app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_FILE_DIR'] = './.flask_session/'
 app.config['SESSION_COOKIE_DOMAIN'] = 'localhost'

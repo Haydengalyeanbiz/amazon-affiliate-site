@@ -3,6 +3,7 @@ import HomePage from '@/components/HomePage.vue';
 import FindProductForm from '@/components/FindProductForm.vue';
 import LoginForm from '@/components/LoginForm.vue';
 import EditProductPage from '@/components/EditProductPage.vue';
+import AddStoreProduct from '@/components/AddStoreProduct.vue';
 
 // Define the routes for your application
 const routes = [
@@ -25,6 +26,12 @@ const routes = [
 		path: '/edit-product/:id',
 		name: 'EditProductPage',
 		component: EditProductPage,
+		props: true,
+	},
+	{
+		path: '/find-store-product',
+		name: 'AddStoreProduct',
+		component: AddStoreProduct,
 		props: true,
 	},
 ];
